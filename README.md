@@ -11,7 +11,7 @@ El objetivo no es memorizar manifests, sino desarrollar criterio operativo para 
 - Mejorar el uso de `kubectl`.
 - Entender el comportamiento interno del cluster.
 - Trabajar con manifests, Helm y GitOps.
-- Preparar conocimientos aplicables a entrevistas y roles DevOps/SRE.
+- Preparar conocimientos aplicables a roles DevOps/SRE.
 
 ## Estructura
 
