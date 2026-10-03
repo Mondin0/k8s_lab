@@ -1,39 +1,37 @@
-# Lab 01 — Pod básico y troubleshooting
+# Lab 01 — Pod + ImagePullBackOff
 
-## Escenario
+## Objetivo
 
-Necesitamos desplegar una instancia simple de Nginx dentro de Kubernetes para validar que el cluster puede ejecutar correctamente un workload básico.
+Entrenar el ciclo básico de operación y troubleshooting de un Pod:
 
-El Pod debe quedar operativo y accesible localmente para hacer una prueba HTTP.
+```text
+deploy → verify → break → observe → diagnose → fix → verify
+```
 
-## Requisitos
+El laboratorio utiliza una imagen inválida para reproducir `ErrImagePull` / `ImagePullBackOff`.
 
-Crear un Pod que cumpla:
+## Healthy path
 
-- Nombre: `nginx-lab`
-- Imagen: `nginx:1.27`
-- Label: `app: nginx`
-- Puerto del contenedor: `80`
-
-Podés generar una base con `kubectl` y luego modificar el manifest.
-
-## Validación
-
-Una vez desplegado, verificar:
+Aplicar:
 
 ```bash
-kubectl get pods
+kubectl apply -f manifests/pod.yaml
+```
+
+Verificar:
+
+```bash
 kubectl get pod nginx-lab -o wide
 kubectl describe pod nginx-lab
 ```
 
-El Pod debe quedar en estado:
+El Pod debe alcanzar:
 
 ```text
 Running
 ```
 
-Luego probar el servicio localmente usando `port-forward`:
+Probar HTTP:
 
 ```bash
 kubectl port-forward pod/nginx-lab 8080:80
@@ -45,63 +43,100 @@ En otra terminal:
 curl http://localhost:8080
 ```
 
-La respuesta debe devolver el HTML de Nginx.
+## Incident
 
----
+Eliminar el escenario sano:
 
-# Incidente
+```bash
+kubectl delete pod nginx-lab
+```
 
-Una actualización del deployment introduce una imagen incorrecta:
+Aplicar el manifest roto:
+
+```bash
+kubectl apply -f manifests/pod-broken-image.yaml
+```
+
+La imagen configurada deliberadamente no existe:
 
 ```text
 nginx:1.27-invalid
 ```
 
-Modificar el Pod para utilizar esa imagen y aplicar nuevamente el manifest.
+## Restricción
 
-## Objetivo de troubleshooting
+No corregir inmediatamente la imagen.
 
-Sin corregir inmediatamente el problema, investigar qué está ocurriendo.
+Primero obtener evidencia suficiente para explicar qué está ocurriendo.
 
-Responder:
+## Investigación
 
-1. ¿Cuál es el estado del Pod?
-2. ¿El contenedor llegó a ejecutarse?
-3. ¿Qué muestra `kubectl describe pod`?
-4. ¿Qué eventos genera Kubernetes?
-5. ¿Qué componente intenta descargar la imagen?
-6. ¿Por qué Kubernetes sigue intentando iniciar el contenedor?
-7. ¿Qué diferencia hay entre `ErrImagePull` e `ImagePullBackOff`?
-
-## Comandos permitidos
-
-Podés usar cualquier herramienta normal de Kubernetes, por ejemplo:
+Empezar por:
 
 ```bash
-kubectl get
-kubectl describe
-kubectl logs
-kubectl get events
-kubectl explain
+kubectl get pods
+kubectl get pod nginx-lab -o wide
+kubectl describe pod nginx-lab
+kubectl get events --sort-by=.metadata.creationTimestamp
 ```
 
-No buscar directamente la solución del incidente.
+Intentar también:
+
+```bash
+kubectl logs nginx-lab
+```
+
+Si `logs` no devuelve logs de aplicación, explicar por qué.
+
+## Preguntas a responder
+
+1. ¿Cuál es el estado observado?
+2. ¿El contenedor llegó a ejecutarse?
+3. ¿Qué evidencia aparece en `describe`?
+4. ¿Qué muestran los Events?
+5. ¿Qué componente del nodo participa en el image pull?
+6. ¿Por qué Kubernetes vuelve a intentarlo?
+7. ¿Cuál es la diferencia práctica entre `ErrImagePull` e `ImagePullBackOff`?
+8. ¿Por qué `kubectl logs` puede no ser útil en este escenario?
+
+## Evidencia requerida
+
+Completar:
+
+[**evidence/troubleshooting.md**](evidence/troubleshooting.md)
+
+No reemplazar los placeholders con información teórica: deben usarse outputs del cluster ejecutado.
+
+## Fix
+
+Una vez documentado el diagnóstico, volver a utilizar la imagen válida:
+
+```text
+nginx:1.27
+```
+
+Puede aplicarse nuevamente `manifests/pod.yaml`.
 
 ## Criterio de finalización
 
-El laboratorio está terminado cuando:
+- [ ] Pod sano desplegado y validado;
+- [ ] respuesta HTTP obtenida;
+- [ ] incidente reproducido;
+- [ ] estado previo al fix documentado;
+- [ ] Events inspeccionados;
+- [ ] hipótesis escrita;
+- [ ] causa raíz respaldada por evidencia;
+- [ ] imagen corregida;
+- [ ] Pod nuevamente en `Running`;
+- [ ] verificación HTTP posterior al fix;
+- [ ] explicación interna completada.
 
-- el Pod funciona correctamente;
-- podés provocar el error de imagen;
-- identificás la causa usando información del cluster;
-- corregís el problema;
-- podés explicar qué ocurrió sin depender únicamente del mensaje de error.
+## Interview check
 
-## Notas
+Al terminar debería poder explicar, sin mirar el README:
 
-Documentar brevemente:
-
-- causa raíz;
-- comandos utilizados;
-- evidencia encontrada;
-- solución aplicada.
+- qué diferencia hay entre un Pod `Pending`, `ErrImagePull` e `ImagePullBackOff`;
+- qué información aporta `describe` frente a `logs`;
+- quién intenta obtener la imagen;
+- por qué existe backoff;
+- qué evidencia buscaría primero ante este incidente en producción.

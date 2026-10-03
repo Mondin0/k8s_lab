@@ -1,185 +1,127 @@
-# Kubernetes Labs
+# Kubernetes Operations Lab
 
-Repositorio personal de práctica orientado a administración, operación y troubleshooting de Kubernetes.
+Repositorio personal de entrenamiento práctico orientado a **operación, troubleshooting y Platform Engineering con Kubernetes**.
 
-El objetivo no es memorizar manifests, sino desarrollar criterio operativo para trabajar con clusters reales: desplegar workloads, diagnosticar fallas, entender scheduling, networking, storage, seguridad y automatización.
+El objetivo no es acumular manifests ni memorizar YAML. Cada laboratorio busca demostrar una capacidad operativa concreta mediante un escenario reproducible, una falla intencional, evidencia obtenida desde el cluster y una explicación de causa raíz.
 
-## Objetivos
+## Qué demuestra este repositorio
 
-- Fortalecer fundamentos de Kubernetes.
-- Practicar troubleshooting sobre escenarios reales.
-- Mejorar el uso de `kubectl`.
-- Entender el comportamiento interno del cluster.
-- Trabajar con manifests, Helm y GitOps.
-- Preparar conocimientos aplicables a roles DevOps/SRE.
+Cada lab sigue este ciclo:
+
+```text
+deploy
+  ↓
+break
+  ↓
+observe
+  ↓
+collect evidence
+  ↓
+form a hypothesis
+  ↓
+fix
+  ↓
+verify
+  ↓
+explain
+```
+
+La evidencia importa más que el resultado final: `kubectl describe`, logs, events, endpoints, DNS, métricas y otros datos del cluster deben sostener el diagnóstico.
+
+## Entorno
+
+Entorno base de laboratorio:
+
+- Kubernetes local con `kind`
+- cluster: `k8s-lab`
+- `kubectl`
+- Docker
+
+Ver [docs/environment.md](docs/environment.md).
+
+## Progreso
+
+| Área | Laboratorio | Estado | Evidencia |
+| --- | --- | --- | --- |
+| Core | Pod + ImagePullBackOff | 🔄 En progreso | [troubleshooting](01-core/01-pod/evidence/troubleshooting.md) |
+| Core | Deployment + rollout failure | ⬜ Planificado | — |
+| Core | Service + selector mismatch | ⬜ Planificado | — |
+| Core | ConfigMap / Secret | ⬜ Planificado | — |
+| Core | Readiness / Liveness probes | ⬜ Planificado | — |
+| Scheduling | Requests / limits + FailedScheduling | ⬜ Planificado | — |
+| Scheduling | Taints / tolerations | ⬜ Planificado | — |
+| Scheduling | Affinity / anti-affinity | ⬜ Planificado | — |
+| Storage | PV / PVC troubleshooting | ⬜ Planificado | — |
+| Networking | Service / endpoints | ⬜ Planificado | — |
+| Networking | DNS | ⬜ Planificado | — |
+| Networking | Ingress | ⬜ Planificado | — |
+| Networking | NetworkPolicy | ⬜ Planificado | — |
+| RBAC | ServiceAccount + Forbidden | ⬜ Planificado | — |
+| Helm | Install / upgrade / rollback | ⬜ Planificado | — |
+| ArgoCD | Sync / drift / reconciliation | ⬜ Planificado | — |
+| Observability | Metrics / logs / troubleshooting | ⬜ Planificado | — |
+
+Un laboratorio pasa a **completado** únicamente cuando contiene evidencia real de ejecución y una explicación de la causa raíz.
 
 ## Estructura
 
 ```text
 .
-├── 01-core
-├── 02-scheduling
-├── 03-storage
-├── 04-networking
-├── 05-rbac
-├── 06-helm
-├── 07-argocd
-└── 08-observability
+├── docs/
+│   ├── environment.md
+│   ├── methodology.md
+│   └── learning-log.md
+├── templates/
+│   ├── lab-readme-template.md
+│   └── troubleshooting-template.md
+├── 01-core/
+├── 02-scheduling/
+├── 03-storage/
+├── 04-networking/
+├── 05-rbac/
+├── 06-helm/
+├── 07-argocd/
+└── 08-observability/
 ```
 
-### 01-core
-
-Fundamentos de workloads y objetos básicos:
-
-- Pods
-- Deployments
-- Services
-- ConfigMaps
-- Secrets
-- Probes
-- Resources
-
-### 02-scheduling
-
-Control de ubicación y recursos:
-
-- Requests y limits
-- Node selectors
-- Taints y tolerations
-- Affinity y anti-affinity
-- Scheduling failures
-
-### 03-storage
-
-Persistencia:
-
-- Volumes
-- PersistentVolumes
-- PersistentVolumeClaims
-- StorageClasses
-- Stateful workloads
-
-### 04-networking
-
-Comunicación dentro y fuera del cluster:
-
-- Services
-- DNS
-- Ingress
-- NetworkPolicies
-- Debug de conectividad
-
-### 05-rbac
-
-Seguridad y permisos:
-
-- ServiceAccounts
-- Roles
-- ClusterRoles
-- RoleBindings
-- ClusterRoleBindings
-
-### 06-helm
-
-Packaging y reutilización:
-
-- Charts
-- Templates
-- Values
-- Releases
-- Upgrades
-- Rollbacks
-
-### 07-argocd
-
-GitOps:
-
-- Applications
-- Sync
-- Drift
-- Rollbacks
-- Declarative deployments
-
-### 08-observability
-
-Observabilidad y operación:
-
-- Metrics
-- Logs
-- Prometheus
-- Grafana
-- Loki
-- Troubleshooting
-
-## Metodología
-
-Cada laboratorio intenta reproducir un problema o escenario concreto.
-
-La estructura general es:
+Cada laboratorio utiliza, cuando corresponde:
 
 ```text
 lab/
 ├── README.md
-└── manifests/
+├── manifests/
+│   ├── healthy.yaml
+│   └── broken.yaml
+└── evidence/
+    └── troubleshooting.md
 ```
 
-Cada `README.md` contiene:
+## Metodología
 
-- escenario;
-- requisitos;
-- problema a resolver;
-- comandos útiles;
-- criterios de validación;
-- notas de troubleshooting.
+Antes de corregir una falla:
+
+1. observar el síntoma;
+2. recopilar evidencia;
+3. formular una hipótesis;
+4. validarla;
+5. aplicar una corrección;
+6. verificar el estado final;
+7. explicar qué ocurrió internamente.
+
+Detalles en [docs/methodology.md](docs/methodology.md).
 
 ## Reglas de práctica
 
-- Usar herramientas reales de trabajo.
-- No depender de escribir YAML completamente de memoria.
-- Usar `kubectl explain`, documentación y generación de manifests cuando sea necesario.
-- Antes de corregir un error, entender la causa.
-- Documentar la evidencia encontrada.
-- Romper cosas intencionalmente.
-- Intentar resolver el problema antes de buscar la solución.
+- No corregir una falla apenas aparece el mensaje de error.
+- Priorizar evidencia del cluster sobre intuición.
+- Usar `kubectl explain` y documentación en lugar de memorizar manifests.
+- Generar YAML base con `kubectl --dry-run=client -o yaml` cuando sea útil.
+- Documentar solamente outputs realmente obtenidos.
+- Romper escenarios de forma intencional y reproducible.
+- Poder explicar el diagnóstico sin depender únicamente del mensaje final de error.
 
-## Comandos frecuentes
+## Objetivo
 
-```bash
-kubectl get pods
-kubectl get pods -o wide
-kubectl describe pod <pod>
-kubectl logs <pod>
-kubectl get events
-kubectl explain <resource>
-```
+Llegar a recibir un workload o cluster con problemas y poder seguir un proceso sistemático de diagnóstico hasta encontrar y demostrar la causa raíz.
 
-## Progreso
-
-- [ ] Core
-- [ ] Scheduling
-- [ ] Storage
-- [ ] Networking
-- [ ] RBAC
-- [ ] Helm
-- [ ] ArgoCD
-- [ ] Observability
-
-## Meta
-
-Poder recibir un cluster o workload con problemas y seguir un proceso sistemático:
-
-```text
-observar
-   ↓
-recopilar evidencia
-   ↓
-formular hipótesis
-   ↓
-validar
-   ↓
-corregir
-   ↓
-verificar
-```
-
-El objetivo final es desarrollar autonomía operativa sobre Kubernetes, no solamente conocer su sintaxis.
+Este repositorio funciona como registro de ese entrenamiento.
